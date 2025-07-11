@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: #ff0080;
+    --secondary: #00ffff;
+    --accent: #ffff00;
+    --background: #0a0a0a;
+    --foreground: #ffffff;
+    --muted: #666666;
+    --border: #333333;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background: linear-gradient(135deg, var(--background) 0%, #000000 100%);
+  }
+}
+
+@layer components {
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--background);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--background);
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, var(--secondary), var(--accent));
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .text-primary {
+    color: var(--primary);
+  }
+
+  .text-secondary {
+    color: var(--secondary);
+  }
+
+  .bg-primary {
+    background-color: var(--primary);
+  }
+
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+
+  .border-primary {
+    border-color: var(--primary);
+  }
+
+  .bg-background {
+    background-color: var(--background);
+  }
+
+  .text-foreground {
+    color: var(--foreground);
+  }
+
+  .text-muted-foreground {
+    color: var(--muted);
+  }
+}
+
+/* Gaming RGB animations */
+@keyframes rgb-border {
+  0% {
+    border-color: #ff0080;
+  }
+  25% {
+    border-color: #00ffff;
+  }
+  50% {
+    border-color: #ffff00;
+  }
+  75% {
+    border-color: #ff8000;
+  }
+  100% {
+    border-color: #ff0080;
+  }
+}
+
+.rgb-border {
+  animation: rgb-border 3s linear infinite;
+}
+
+/* Neon glow effects */
+.neon-glow {
+  box-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary), 0 0 15px var(--primary), 0 0 20px var(--primary);
+}
+
+/* Theme-specific styles */
+.theme-cyberpunk {
+  --shadow-color: rgba(255, 0, 128, 0.3);
+}
+
+.theme-matrix {
+  --shadow-color: rgba(0, 255, 65, 0.3);
+}
+
+.theme-rgb-gaming {
+  --shadow-color: rgba(255, 107, 107, 0.3);
+}
+
+.theme-neon-purple {
+  --shadow-color: rgba(139, 92, 246, 0.3);
+}
+
+.theme-toxic-green {
+  --shadow-color: rgba(132, 204, 22, 0.3);
+}
+
+.theme-fire-orange {
+  --shadow-color: rgba(249, 115, 22, 0.3);
+}
