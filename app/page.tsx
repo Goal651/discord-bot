@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { MessageStream } from "@/components/message-stream"
 import { ConnectionStatus } from "@/components/connection-status"
 import { ThemeSelector } from "@/components/theme-selector"
 import { ChannelSelector } from "@/components/channel-selector"
-import { WebSocketManager } from "@/lib/websocket-manager"
+import { WebSocketManager } from "@/lib/websocket-manager" // Now Socket.IO manager
 import { MessageStore } from "@/lib/message-store"
 import { ThemeManager } from "@/lib/theme-manager"
 import { ChannelManager } from "@/lib/channel-manager"
@@ -27,8 +27,8 @@ export default function Home() {
     // Apply theme to document
     themeManager.applyTheme(currentTheme)
 
-    // Initialize WebSocket connection
-    wsManager.connect("ws://localhost:3000")
+    // Initialize Socket.IO connection
+    wsManager.connect("http://localhost:3001/discord") // Connect to the Socket.IO namespace
 
     // Set up event listeners
     wsManager.onConnectionChange((status) => {
@@ -36,6 +36,7 @@ export default function Home() {
     })
 
     wsManager.onMessage((message) => {
+      // Only add message if it belongs to the active channel or no channel is active yet
       if (!activeChannel || message.channelId === activeChannel) {
         messageStore.addMessage(message)
         setMessages([...messageStore.getMessages()])
@@ -49,35 +50,56 @@ export default function Home() {
       // Auto-select first channel if none selected
       if (!activeChannel && channelList.length > 0) {
         setActiveChannel(channelList[0].id)
+        // Immediately join the first channel
+        wsManager.send("join_channel", { channelId: channelList[0].id })
       }
     })
 
     wsManager.onError((error) => {
-      console.error("WebSocket error:", error)
+      console.error("Socket.IO error:", error)
       setConnectionStatus("disconnected")
+      // Potentially show a toast notification for the error
     })
+
+    // Request initial channels list from the server
+    wsManager.send("get_channels")
 
     return () => {
       wsManager.disconnect()
     }
   }, [wsManager, messageStore, themeManager, channelManager, currentTheme, activeChannel])
 
-  const handleChannelChange = (channelId: string) => {
-    setActiveChannel(channelId)
-    messageStore.clearMessages()
-    setMessages([])
+  const handleChannelChange = useCallback(
+    (channelId: string) => {
+      if (activeChannel) {
+        wsManager.send("leave_channel", { channelId: activeChannel })
+      }
+      setActiveChannel(channelId)
+      messageStore.clearMessages()
+      setMessages([])
 
-    // Request messages for new channel
-    wsManager.send({
-      type: "switch_channel",
-      payload: { channelId },
-    })
-  }
+      // Request to join the new channel
+      wsManager.send("join_channel", { channelId }, (response) => {
+        if (response.success) {
+          console.log(`Successfully joined channel: ${channelId}`)
+          // Optionally request history for the new channel after joining
+          wsManager.send("request_history", { channelId, limit: 50 })
+        } else {
+          console.error(`Failed to join channel ${channelId}:`, response.error)
+          // Handle error, maybe revert activeChannel or show a message
+        }
+      })
+    },
+    [activeChannel, wsManager, messageStore],
+  )
 
-  const handleThemeChange = (theme: string) => {
-    setCurrentTheme(theme)
-    themeManager.applyTheme(theme)
-  }
+  const handleThemeChange = useCallback(
+    (theme: string) => {
+      setCurrentTheme(theme)
+      themeManager.applyTheme(theme)
+    },
+    [themeManager],
+  )
 
   return (
     <div className={`min-h-screen transition-all duration-500 ${themeManager.getThemeClasses(currentTheme)}`}>
