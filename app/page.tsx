@@ -5,11 +5,15 @@ import { MessageStream } from "@/components/message-stream"
 import { ConnectionStatus } from "@/components/connection-status"
 import { ThemeSelector } from "@/components/theme-selector"
 import { ChannelSelector } from "@/components/channel-selector"
-import { WebSocketManager } from "@/lib/websocket-manager" // Now Socket.IO manager
+import { websocketService } from "@/api/websocket-service"
 import { MessageStore } from "@/lib/message-store"
 import { ThemeManager } from "@/lib/theme-manager"
 import { ChannelManager } from "@/lib/channel-manager"
 import type { DiscordMessage, DiscordChannel } from "@/types/discord"
+import { useAuth } from "@/components/auth-context"
+import { useRouter } from "next/navigation"
+import { channelApi } from "@/api/channel"
+import { messageApi } from "@/api/message"
 
 export default function Home() {
   const [messages, setMessages] = useState<DiscordMessage[]>([])
@@ -18,17 +22,24 @@ export default function Home() {
   const [channels, setChannels] = useState<DiscordChannel[]>([])
   const [activeChannel, setActiveChannel] = useState<string | null>(null)
 
-  const [wsManager] = useState(() => new WebSocketManager())
+  const wsManager = websocketService
   const [messageStore] = useState(() => new MessageStore())
   const [themeManager] = useState(() => new ThemeManager())
   const [channelManager] = useState(() => new ChannelManager())
 
+  const { token, logout } = useAuth()
+  const router = useRouter()
+
   useEffect(() => {
+    if (!token) {
+      router.push("/login")
+      return
+    }
     // Apply theme to document
     themeManager.applyTheme(currentTheme)
 
-    // Initialize Socket.IO connection
-    wsManager.connect("http://localhost:3001/discord") // Connect to the Socket.IO namespace
+    // Initialize Socket.IO connection with token
+    wsManager.connect("http://localhost:3001/discord", token)
 
     // Set up event listeners
     wsManager.onConnectionChange((status) => {
@@ -67,7 +78,24 @@ export default function Home() {
     return () => {
       wsManager.disconnect()
     }
-  }, [wsManager, messageStore, themeManager, channelManager, currentTheme, activeChannel])
+  }, [messageStore, themeManager, channelManager, currentTheme, activeChannel, token, router])
+
+  useEffect(() => {
+    if (activeChannel) {
+      // Fetch messages for the selected channel
+      messageApi.getMessages(activeChannel).then(setMessages)
+    }
+  }, [activeChannel])
+
+  const [newMessage, setNewMessage] = useState("")
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newMessage.trim() || !activeChannel) return
+    await messageApi.sendMessage({ channelId: activeChannel, content: newMessage })
+    setNewMessage("")
+    // Refresh messages
+    messageApi.getMessages(activeChannel).then(setMessages)
+  }
 
   const handleChannelChange = useCallback(
     (channelId: string) => {
@@ -90,7 +118,7 @@ export default function Home() {
         }
       })
     },
-    [activeChannel, wsManager, messageStore],
+    [activeChannel, messageStore],
   )
 
   const handleThemeChange = useCallback(
@@ -102,37 +130,62 @@ export default function Home() {
   )
 
   return (
-    <div className={`min-h-screen transition-all duration-500 ${themeManager.getThemeClasses(currentTheme)}`}>
-      <div className="container mx-auto px-4 py-8">
-        <header className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Discord Stream Console
-            </h1>
-            <div className="flex items-center space-x-4">
-              <ThemeSelector currentTheme={currentTheme} onThemeChange={handleThemeChange} />
-              <ConnectionStatus status={connectionStatus} />
-            </div>
-          </div>
-
-          {channels.length > 0 && (
-            <ChannelSelector channels={channels} activeChannel={activeChannel} onChannelChange={handleChannelChange} />
+    <div className={`min-h-screen flex bg-background transition-all duration-500 ${themeManager.getThemeClasses(currentTheme)}`}>
+      {/* Sidebar for channels */}
+      <aside className="w-64 bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] border-r border-[hsl(var(--sidebar-border))] flex flex-col">
+        <div className="p-6 border-b border-[hsl(var(--sidebar-border))] flex items-center justify-between">
+          <h2 className="text-xl font-bold">Channels</h2>
+        </div>
+        <nav className="flex-1 overflow-y-auto">
+          {channels.length > 0 ? (
+            <ul>
+              {channels.map((channel) => (
+                <li key={channel.id}>
+                  <button
+                    className={`w-full text-left px-6 py-3 transition rounded-none border-l-4 ${activeChannel === channel.id ? "bg-[hsl(var(--sidebar-accent))] border-[hsl(var(--sidebar-ring))] font-semibold" : "hover:bg-[hsl(var(--sidebar-accent))]/60 border-transparent"}`}
+                    onClick={() => setActiveChannel(channel.id)}
+                  >
+                    #{channel.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="p-6 text-muted-foreground">No channels</div>
           )}
+        </nav>
+      </aside>
+      {/* Main content */}
+      <main className="flex-1 flex flex-col min-h-screen">
+        <header className="px-8 py-6 border-b border-[hsl(var(--border))] flex items-center justify-between bg-card/80 backdrop-blur-md">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Discord Stream Console</h1>
+          <div className="flex items-center space-x-4">
+            <ThemeSelector currentTheme={currentTheme} onThemeChange={handleThemeChange} />
+            <ConnectionStatus status={connectionStatus} />
+          </div>
         </header>
-
-        <main className="max-w-6xl mx-auto">
-          <MessageStream
-            messages={messages}
-            isConnected={connectionStatus === "connected"}
-            activeChannel={channelManager.getChannelById(activeChannel || "")}
-          />
-        </main>
-      </div>
-
-      {/* Gaming RGB border effect */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 border-2 border-gradient-to-r from-primary via-secondary to-accent opacity-20 animate-pulse"></div>
-      </div>
+        <section className="flex-1 flex flex-col items-center justify-center bg-background">
+          <div className="w-full max-w-3xl flex-1 flex flex-col rounded-2xl shadow-lg bg-card/90 mt-8 mb-4 overflow-hidden">
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <MessageStream
+                messages={messages}
+                isConnected={connectionStatus === "connected"}
+                activeChannel={channels.find(c => c.id === activeChannel)}
+              />
+            </div>
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2 border-t border-[hsl(var(--border))] bg-background/80 px-4 py-3">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={e => setNewMessage(e.target.value)}
+                placeholder="Type your message..."
+                className="flex-1 border-none outline-none bg-transparent px-3 py-2 text-base"
+              />
+              <button type="submit" className="bg-primary text-white px-6 py-2 rounded-lg shadow hover:bg-primary/90 transition">Send</button>
+            </form>
+          </div>
+        </section>
+      </main>
     </div>
   )
 }
