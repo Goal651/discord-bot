@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from "@/components/auth-context"
+import { DiscordAuthEffect } from "@/components/discord-auth-effect"
 
 export const metadata: Metadata = {
   title: 'v0 App',
@@ -16,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <DiscordAuthEffect />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

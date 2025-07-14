@@ -1,5 +1,7 @@
 import axios, { AxiosInstance } from "axios"
 import { LOGIN_ENDPOINT, REGISTER_ENDPOINT } from "./constant"
+import type { ApiResponse } from "@/types/api-response";
+import { AuthResponse } from "@/types/response";
 
 class AuthService {
   private axiosInstance: AxiosInstance
@@ -25,17 +27,26 @@ class AuthService {
   }
 
   async login(email: string, password: string): Promise<string> {
-    const response = await this.axiosInstance.post(LOGIN_ENDPOINT, {email, password })
-    const token = response.data.token
-    this.setToken(token)
-    return token
+    const response = await this.axiosInstance.post<ApiResponse<AuthResponse>>(LOGIN_ENDPOINT, {email, password });
+    console.log(response)
+    if (response.data.status === "succeed") {
+      const token = response.data.data?.token||'';
+      this.setToken(token);
+      return token;
+    } else {
+      throw new Error(response.data.message || "Login failed");
+    }
   }
 
-  async register(username: string, password: string): Promise<string> {
-    const response = await this.axiosInstance.post(REGISTER_ENDPOINT, { username, password })
-    const token = response.data.token
-    this.setToken(token)
-    return token
+  async register(username: string,email:string, password: string): Promise<string> {
+    const response = await this.axiosInstance.post<ApiResponse<AuthResponse>>(REGISTER_ENDPOINT, { username, email,password });
+    if (response.data.status === "succeed") {
+      const token = response.data.data?.token||'';
+      this.setToken(token);
+      return token;
+    } else {
+      throw new Error(response.data.message || "Registration failed");
+    }
   }
 
   logout() {

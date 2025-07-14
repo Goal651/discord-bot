@@ -47,7 +47,9 @@ class WebSocketService {
     }
 
     private setupEventListeners(): void {
+        console.log(this.socket)
         if (!this.socket) return
+ 
         this.socket.on("connect", () => {
             console.log("Socket.IO connected")
             this.connectionStatusCallback?.("connected")
@@ -66,6 +68,7 @@ class WebSocketService {
             this.errorCallback?.(new Error(error.message || "Unknown server error"))
         })
         this.socket.on("message", (message: DiscordMessage) => {
+            console.log(message)
             this.messageCallback?.(message)
         })
         this.socket.on("channels_list", (channels: DiscordChannel[]) => {
@@ -115,19 +118,24 @@ class WebSocketService {
         }
     }
 
-    send(eventName: string, payload?: any, callback?: (response: any) => void): void {
-        if (this.socket && this.socket.connected) {
-            if (callback) {
-                this.socket.emit(eventName, payload, callback)
-            } else {
-                this.socket.emit(eventName, payload)
-            }
+    // Log all outgoing events
+    private logEmit(event: string, ...args: any[]) {
+        console.log(`[Socket.IO] Emit: ${event}`, ...args)
+    }
+
+    send(event: string, data?: any, callback?: (response: any) => void) {
+        this.logEmit(event, data)
+        if (!this.socket) return
+        if (callback) {
+            this.socket.emit(event, data, callback)
         } else {
-            console.warn(`Socket.IO is not connected. Cannot emit event: ${eventName}`)
-            if (callback) {
-                callback({ success: false, error: "Socket not connected" })
-            }
+            this.socket.emit(event, data)
         }
+    }
+
+    // Add a getter for the socket instance
+    getSocket() {
+        return this.socket
     }
 }
 
