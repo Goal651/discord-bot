@@ -1,6 +1,6 @@
 import { io, type Socket } from "socket.io-client"
 import type { DiscordMessage, ConnectionStatus, DiscordChannel } from "@/types/discord"
-import { authService } from "@/api/auth"
+import { BASE_URL } from "./constant"
 
 class WebSocketService {
     private socket: Socket | null = null
@@ -12,13 +12,10 @@ class WebSocketService {
     private token: string | null = null
 
     constructor() {
-        this.url = "http://localhost:3001/discord"
+        this.url = BASE_URL.WS
     }
 
-    connect(url?: string, token?: string): void {
-        if (url) {
-            this.url = url
-        }
+    connect(): void {
         // Use provided token or fallback to AuthService's token
         this.token = localStorage.getItem('auth_token')
         if (this.socket && this.socket.connected) {
@@ -42,14 +39,13 @@ class WebSocketService {
         this.token = token
         if (this.socket) {
             this.disconnect()
-            this.connect(undefined, token)
+            this.connect()
         }
     }
 
     private setupEventListeners(): void {
-        console.log(this.socket)
         if (!this.socket) return
- 
+
         this.socket.on("connect", () => {
             console.log("Socket.IO connected")
             this.connectionStatusCallback?.("connected")
@@ -68,7 +64,6 @@ class WebSocketService {
             this.errorCallback?.(new Error(error.message || "Unknown server error"))
         })
         this.socket.on("message", (message: DiscordMessage) => {
-            console.log(message)
             this.messageCallback?.(message)
         })
         this.socket.on("channels_list", (channels: DiscordChannel[]) => {
@@ -118,13 +113,9 @@ class WebSocketService {
         }
     }
 
-    // Log all outgoing events
-    private logEmit(event: string, ...args: any[]) {
-        console.log(`[Socket.IO] Emit: ${event}`, ...args)
-    }
+
 
     send(event: string, data?: any, callback?: (response: any) => void) {
-        this.logEmit(event, data)
         if (!this.socket) return
         if (callback) {
             this.socket.emit(event, data, callback)
@@ -133,10 +124,7 @@ class WebSocketService {
         }
     }
 
-    // Add a getter for the socket instance
-    getSocket() {
-        return this.socket
-    }
+
 }
 
 export const websocketService = new WebSocketService() 

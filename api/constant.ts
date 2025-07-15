@@ -1,9 +1,23 @@
 // API and server endpoints
+const SERVER_URL = "http://localhost:3001"
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
-export const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001/discord"
+export const BASE_URL = {
+    API: SERVER_URL + '/api',
+    WS: SERVER_URL + '/discord'
+}
 
-// Example endpoints
-export const LOGIN_ENDPOINT = "/auth/login"
-export const REGISTER_ENDPOINT = "/auth/register"
-// Add more endpoints as needed 
+export const END_POINT = {
+    AUTH: {
+        LOGIN: '/auth/discord/login'
+    },
+}
+
+export const WS_ENDPOINTS = {
+    CHANNELS: {
+
+    },
+    MESSAGE: {
+
+    }
+}
+

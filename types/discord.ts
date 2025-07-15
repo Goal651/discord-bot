@@ -69,4 +69,5 @@ export interface DiscordChannel {
     canWrite: boolean
     canManage: boolean
   }
+  icon?: string // URL to the channel/server icon
 }

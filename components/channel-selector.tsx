@@ -40,9 +40,9 @@ export function ChannelSelector({ channels, activeChannel, onChannelChange }: Ch
                   <div className="font-semibold">{channel.name}</div>
                   <div className="text-xs opacity-70">{channel.serverName}</div>
                 </div>
-                {channel.unreadCount > 0 && (
+                {(channel.unreadCount ?? 0) > 0 && (
                   <Badge className="bg-red-500 text-white text-xs px-1 py-0 min-w-[20px] h-5">
-                    {channel.unreadCount > 99 ? "99+" : channel.unreadCount}
+                    {(channel.unreadCount ?? 0) > 99 ? "99+" : (channel.unreadCount ?? 0)}
                   </Badge>
                 )}
               </div>
