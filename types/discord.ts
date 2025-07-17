@@ -43,14 +43,7 @@ export interface DiscordEmbed {
 export interface DiscordReaction {
   emoji: { id: string | null; name: string; animated?: boolean }
   count: number
-  me: boolean // true if the current user reacted
-}
-
-// WebSocketMessage is less relevant with Socket.IO's event-based system,
-// but keeping it for conceptual mapping if needed for specific backend payloads.
-export interface WebSocketMessage {
-  type: string // This will now map to Socket.IO event names like "new_message", "channels_list"
-  payload: any
+  me: boolean
 }
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected"
@@ -69,5 +62,4 @@ export interface DiscordChannel {
     canWrite: boolean
     canManage: boolean
   }
-  icon?: string // URL to the channel/server icon
 }

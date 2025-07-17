@@ -1,7 +1,7 @@
-import type { Metadata } from 'next'
+import { Metadata } from 'next'
 import './globals.css'
-import { DiscordAuthEffect } from "@/components/discord-auth-effect"
 import { SocketProvider } from '@/context/Socket'
+import UseDiscordAuthToken from '@/hooks/useDiscordAuthToken'
 
 export const metadata: Metadata = {
   title: 'CHAT_BOT',
@@ -14,7 +14,7 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
     <html lang="en">
       <body>
         <SocketProvider>
-          <DiscordAuthEffect />
+          <UseDiscordAuthToken />
           {children}
         </SocketProvider>
       </body>

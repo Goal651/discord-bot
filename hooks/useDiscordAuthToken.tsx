@@ -1,8 +1,9 @@
+'use client'
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/useToast"
 
-export function useDiscordAuthToken(redirectPath: string = "/") {
+export default function UseDiscordAuthToken() {
   const router = useRouter()
   const { toast } = useToast()
 
@@ -12,10 +13,11 @@ export function useDiscordAuthToken(redirectPath: string = "/") {
     const error = params.get("error")
     if (token) {
       localStorage.setItem("auth_token", token)
-      router.replace(redirectPath)
+      router.replace('/')
     } else if (error) {
       toast({ title: "Login Error", description: error })
       router.replace("/login")
     }
-  }, [router, redirectPath, toast])
+  }, [router,  toast])
+  return null
 } 

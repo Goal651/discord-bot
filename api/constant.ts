@@ -13,11 +13,23 @@ export const END_POINT = {
 }
 
 export const WS_ENDPOINTS = {
-    CHANNELS: {
+    CONNECTION: {
+        CONNECT: 'connect',
+        DISCONNECT: 'disconnect',
+        STATUS: 'connection_status'
+    },
+    ERROR: {
+        CONNECTION: 'connect_error',
+        GLOBAL: 'error',
 
     },
+    CHANNELS: {
+        JOIN: 'join_channel',
+        LEAVE: 'leave_channel',
+        LIST: 'channel_list',
+    },
     MESSAGE: {
-
+        NEW: 'message'
     }
 }
 

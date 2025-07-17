@@ -1,12 +1,14 @@
 import { useSocket } from "@/context/Socket"
-import { DiscordChannel, DiscordMessage } from "@/types/discord"
+import { ConnectionStatus, DiscordChannel, DiscordMessage } from "@/types/discord"
 import { useEffect, useState } from "react"
 
 
-export function useBot() {
+export function useBot({ activeChannel }: { activeChannel: string | null }) {
     const socket = useSocket()
     const [channels, setChannels] = useState<DiscordChannel[]>([])
     const [messages, setMessages] = useState<DiscordMessage[]>([])
+    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting")
+    
 
     useEffect(() => {
         if (!socket) return
@@ -16,13 +18,21 @@ export function useBot() {
         socket.onMessage((data) => {
             setMessages((prev) => [...prev, data])
         })
+        socket.onConnectionChange((data) => {
+            setConnectionStatus(data)
+        })
 
     }, [socket])
 
-    
+    useEffect(() => {
+        setMessages([])
+    }, [activeChannel])
+
+
     return {
         channels,
-        messages
+        messages,
+        connectionStatus
     }
 }
 

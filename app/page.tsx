@@ -2,39 +2,31 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { MessageStream } from "@/components/messageList"
-import { ConnectionStatus } from "@/components/connection-status"
+import { ConnectionStatus } from "@/components/connectionStatus"
 import { useRouter } from "next/navigation"
 import { useSocket } from "@/context/Socket"
 import { useBot } from "@/hooks/useBot"
+import { FaDiscord } from "react-icons/fa"
+import { WS_ENDPOINTS } from "@/api/constant"
 
 export default function Home() {
   const socket = useSocket()
-  const { channels, messages } = useBot()
-  const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "disconnected">("connecting")
   const [activeChannel, setActiveChannel] = useState<string | null>(null)
-
-
+  const { channels, messages, connectionStatus } = useBot({ activeChannel })
   const router = useRouter()
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token')
-    if (!token) {
-      router.push("/login")
-      return
-    }
+    if (!token) router.push("/login")
   }, [])
-
-
-
 
 
   const handleChannelChange = useCallback((channelId: string) => {
     if (!socket) return
-    if (activeChannel) {
-      socket.send("leave_channel", { channelId: activeChannel })
-    }
+
+    if (activeChannel) socket.send(WS_ENDPOINTS.CHANNELS.LEAVE, { channelId: activeChannel })
     setActiveChannel(channelId)
-    socket.send("join_channel", { channelId })
+    socket.send(WS_ENDPOINTS.CHANNELS.JOIN, { channelId })
   }, [activeChannel, socket],)
 
   return (
@@ -56,12 +48,7 @@ export default function Home() {
                   >
                     {/* Avatar */}
                     <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#23272a] border border-[#36393f] mr-1">
-                      <img
-                        src={channel.icon ? channel.icon : "/placeholder-logo.png"}
-                        alt={channel.name}
-                        className="w-6 h-6 rounded-full object-cover"
-                        onError={e => { e.currentTarget.src = "/placeholder-logo.png"; }}
-                      />
+                      <FaDiscord />
                     </span>
                     {/* Hashtag icon as inline SVG */}
                     <span className="flex items-center">
@@ -99,7 +86,6 @@ export default function Home() {
               activeChannel={channels.find(c => c.id === activeChannel)}
               messages={messages}
             />
-            {/* Removed send message form and container */}
           </div>
         </section>
       </main>

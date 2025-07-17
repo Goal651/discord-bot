@@ -1,25 +1,21 @@
 import { io, type Socket } from "socket.io-client"
 import type { DiscordMessage, ConnectionStatus, DiscordChannel } from "@/types/discord"
-import { BASE_URL } from "./constant"
+import { BASE_URL, WS_ENDPOINTS } from "./constant"
 
 class WebSocketService {
     private socket: Socket | null = null
-    private url: string
+    private url: string = BASE_URL.WS
     private connectionStatusCallback?: (status: ConnectionStatus) => void
     private messageCallback?: (message: DiscordMessage) => void
     private errorCallback?: (error: Error) => void
     private channelsCallback?: (channels: DiscordChannel[]) => void
     private token: string | null = null
 
-    constructor() {
-        this.url = BASE_URL.WS
-    }
-
     connect(): void {
         // Use provided token or fallback to AuthService's token
         this.token = localStorage.getItem('auth_token')
+        if (!this.token) return
         if (this.socket && this.socket.connected) {
-            console.log("Socket.IO already connected.")
             return
         }
         this.socket = io(this.url, {
@@ -28,7 +24,7 @@ class WebSocketService {
             reconnectionDelay: 1000,
             timeout: 20000,
             auth: {
-                token: this.token || "",
+                token: this.token,
             },
         })
         this.setupEventListeners()
@@ -46,47 +42,33 @@ class WebSocketService {
     private setupEventListeners(): void {
         if (!this.socket) return
 
-        this.socket.on("connect", () => {
-            console.log("Socket.IO connected")
+        this.socket.on(WS_ENDPOINTS.CONNECTION.CONNECT, () => {
             this.connectionStatusCallback?.("connected")
         })
-        this.socket.on("disconnect", (reason) => {
-            console.log("Socket.IO disconnected:", reason)
+        this.socket.on(WS_ENDPOINTS.CONNECTION.DISCONNECT, (reason) => {
             this.connectionStatusCallback?.("disconnected")
         })
-        this.socket.on("connect_error", (error: Error) => {
+        this.socket.on(WS_ENDPOINTS.ERROR.CONNECTION, (error: Error) => {
             console.error("Socket.IO connection error:", error)
             this.errorCallback?.(error)
             this.connectionStatusCallback?.("disconnected")
         })
-        this.socket.on("error", (error: any) => {
+        this.socket.on(WS_ENDPOINTS.ERROR.GLOBAL, (error: any) => {
             console.error("Socket.IO server error:", error)
             this.errorCallback?.(new Error(error.message || "Unknown server error"))
         })
-        this.socket.on("message", (message: DiscordMessage) => {
+        this.socket.on(WS_ENDPOINTS.MESSAGE.NEW, (message: DiscordMessage) => {
             this.messageCallback?.(message)
         })
-        this.socket.on("channels_list", (channels: DiscordChannel[]) => {
+        this.socket.on(WS_ENDPOINTS.CHANNELS.LIST, (channels: DiscordChannel[]) => {
             this.channelsCallback?.(channels)
         })
-        this.socket.on("connection_status", (status: ConnectionStatus) => {
+        this.socket.on(WS_ENDPOINTS.CONNECTION.STATUS, (status: ConnectionStatus) => {
             this.connectionStatusCallback?.(status)
         })
         this.socket.on("rate_limited", (data: { message: string; retryAfter: number }) => {
             console.warn("Rate limited:", data.message, "Retry after:", data.retryAfter)
             this.errorCallback?.(new Error(`Rate limited: ${data.message}`))
-        })
-        this.socket.on("user_joined", (data: { channelId: string; user: { id: string; username: string } }) => {
-            console.log(`User ${data.user.username} joined channel ${data.channelId}`)
-        })
-        this.socket.on("user_left", (data: { channelId: string; user: { id: string; username: string } }) => {
-            console.log(`User ${data.user.username} left channel ${data.channelId}`)
-        })
-        this.socket.on("typing_start", (data: { channelId: string; userId: string; username: string }) => {
-            console.log(`${data.username} is typing in ${data.channelId}`)
-        })
-        this.socket.on("typing_stop", (data: { channelId: string; userId: string }) => {
-            console.log(`${data.userId} stopped typing in ${data.channelId}`)
         })
     }
 
@@ -113,8 +95,6 @@ class WebSocketService {
         }
     }
 
-
-
     send(event: string, data?: any, callback?: (response: any) => void) {
         if (!this.socket) return
         if (callback) {
@@ -123,8 +103,6 @@ class WebSocketService {
             this.socket.emit(event, data)
         }
     }
-
-
 }
 
 export const websocketService = new WebSocketService() 
