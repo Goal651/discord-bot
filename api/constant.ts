@@ -1,5 +1,5 @@
 // API and server endpoints
-const SERVER_URL = "http://localhost:3001"
+const SERVER_URL = "https://discordbotserver-production.up.railway.app"
 
 export const BASE_URL = {
     API: SERVER_URL + '/api',

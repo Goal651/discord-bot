@@ -24,7 +24,7 @@ export class MessageFormatter {
       // Italic text
       .replace(/\*(.*?)\*/g, "<em>$1</em>")
       // Code blocks
-      .replace(/```(.*?)```/gs, '<pre class="bg-gray-800 p-2 rounded text-sm overflow-x-auto"><code>$1</code></pre>')
+      .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-800 p-2 rounded text-sm overflow-x-auto"><code>$1</code></pre>')
       // Inline code
       .replace(/`(.*?)`/g, '<code class="bg-gray-800 px-1 rounded text-sm">$1</code>')
       // Links
