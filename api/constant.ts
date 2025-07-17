@@ -26,7 +26,7 @@ export const WS_ENDPOINTS = {
     CHANNELS: {
         JOIN: 'join_channel',
         LEAVE: 'leave_channel',
-        LIST: 'channel_list',
+        LIST: 'channels',
     },
     MESSAGE: {
         NEW: 'message'
