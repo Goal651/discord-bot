@@ -29,6 +29,8 @@ export default function Home() {
     socket.send(WS_ENDPOINTS.CHANNELS.JOIN, { channelId })
   }, [activeChannel, socket],)
 
+  const safeChannels = Array.isArray(channels) ? channels : (channels ? [channels] : []);
+
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-[#23272a] via-[#2c2f33] to-[#23272a]">
       {/* Sidebar for channels */}
@@ -38,9 +40,9 @@ export default function Home() {
 
         </div>
         <nav className="flex-1 overflow-y-auto">
-          {channels.length > 0 ? (
+          {safeChannels.length > 0 ? (
             <ul>
-              {channels.map((channel) => (
+              {safeChannels.map((channel) => (
                 <li key={channel.id}>
                   <button
                     className={`w-full flex items-center gap-3 text-left px-6 py-3 transition rounded-none border-l-4 ${activeChannel === channel.id ? "bg-[#2c2f33] border-[#7289da] font-semibold" : "hover:bg-[#36393f]/60 border-transparent"}`}
@@ -83,7 +85,7 @@ export default function Home() {
           <div className="flex-1 overflow-y-auto px-0 py-4 w-full">
             <MessageStream
               isConnected={connectionStatus === "connected"}
-              activeChannel={channels.find(c => c.id === activeChannel)}
+              activeChannel={safeChannels.find(c => c.id === activeChannel)}
               messages={messages}
             />
           </div>

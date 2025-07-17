@@ -13,7 +13,14 @@ export function useBot({ activeChannel }: { activeChannel: string | null }) {
     useEffect(() => {
         if (!socket) return
         socket.onChannelsUpdate((data) => {
-            setChannels(data)
+            // Always set channels as an array
+            if (Array.isArray(data)) {
+                setChannels(data)
+            } else if (data && typeof data === "object") {
+                setChannels([data])
+            } else {
+                setChannels([])
+            }
         })
         socket.onMessage((data) => {
             setMessages((prev) => [...prev, data])
