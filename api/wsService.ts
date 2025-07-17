@@ -61,6 +61,7 @@ class WebSocketService {
             this.messageCallback?.(message)
         })
         this.socket.on(WS_ENDPOINTS.CHANNELS.LIST, (channels: DiscordChannel[]) => {
+            console.log(channels)
             this.channelsCallback?.(channels)
         })
         this.socket.on(WS_ENDPOINTS.CONNECTION.STATUS, (status: ConnectionStatus) => {
