@@ -45,18 +45,59 @@ export function MessageCard({ message, isLatest = false }: MessageCardProps) {
         </div>
         {message.attachments && message.attachments.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-2">
-            {message.attachments.map((attachment, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 px-2 py-1 rounded bg-muted/60 text-sm text-primary hover:bg-muted/80 transition-colors text-gray-300"
-              >
-                <span className="text-lg">📎</span>
-                <span className="truncate max-w-[120px]">{attachment.filename}</span>
-                <Badge variant="outline" className="text-xs border-none bg-transparent text-muted-foreground px-1 text-gray-400">
-                  {(attachment.size / 1024).toFixed(1)}KB
-                </Badge>
-              </div>
-            ))}
+            {message.attachments.map((attachment, index) => {
+              // Determine type
+              const type = attachment.contentType || '';
+              const url = attachment.proxyUrl || attachment.url;
+              const isImage = type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(attachment.filename);
+              const isVideo = type.startsWith('video/') || /\.(mp4|webm|ogg|mov)$/i.test(attachment.filename);
+              const isAudio = type.startsWith('audio/') || /\.(mp3|wav|ogg|aac)$/i.test(attachment.filename);
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col gap-1 px-2 py-1 rounded bg-muted/60 text-sm text-primary hover:bg-muted/80 transition-colors text-gray-300 max-w-xs"
+                  style={{ minWidth: 120 }}
+                >
+                  {isImage ? (
+                    <a href={url} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={url}
+                        alt={attachment.filename}
+                        className="rounded max-h-48 max-w-xs border border-muted shadow"
+                        style={{ objectFit: 'contain', background: '#23272a' }}
+                        loading="lazy"
+                      />
+                    </a>
+                  ) : isVideo ? (
+                    <video
+                      src={url}
+                      controls
+                      className="rounded max-h-48 max-w-xs border border-muted shadow bg-black"
+                      style={{ objectFit: 'contain' }}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : isAudio ? (
+                    <audio
+                      src={url}
+                      controls
+                      className="w-full mt-1"
+                    >
+                      Your browser does not support the audio element.
+                    </audio>
+                  ) : (
+                    <>
+                      <span className="text-lg">📎</span>
+                      <span className="truncate max-w-[120px]">{attachment.filename}</span>
+                      <Badge variant="outline" className="text-xs border-none bg-transparent text-muted-foreground px-1 text-gray-400">
+                        {(attachment.size / 1024).toFixed(1)}KB
+                      </Badge>
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="underline text-blue-400 text-xs mt-1">Download</a>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
