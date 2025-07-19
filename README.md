@@ -1,17 +1,19 @@
-# Discord Bot Project
+# Discord Message Streamer
 
-A modern web client for interacting with your Discord bot, built with Next.js, React, and TypeScript. This project provides a user-friendly interface to communicate with your bot, view messages, and manage your Discord integration.
+A full-stack app that streams messages from a Discord channel to a web frontend in real time. Built for the Railway Senior Full-Stack Engineer - Support interview project.
 
 ---
 
 ## Table of Contents
 
 - [Features](#features)
+- [Architecture](#architecture)
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Deployment](#deployment)
+- [Design Decisions & Improvements](#design-decisions--improvements)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -19,13 +21,27 @@ A modern web client for interacting with your Discord bot, built with Next.js, R
 
 ## Features
 
-- **Discord OAuth2 Authentication**
-- **Real-time Messaging** via WebSockets
+- **Real-time Streaming** of Discord messages from any channel
+- **Channel Selection** and live updates
 - **Responsive UI** for desktop and mobile
-- **Message Formatting** and display
+- **Message Formatting** and display (with attachments)
 - **Connection Status Indicator**
 - **Toast Notifications** for errors and events
 - **Sidebar Navigation**
+- **Support-oriented design**: clear error states, connection feedback, and user guidance
+
+---
+
+## Architecture
+
+- **Backend:** Node.js server with a Discord bot, relays messages via WebSocket
+- **Frontend:** Next.js app (React, TypeScript) connects to backend via socket.io
+- **Deployment:** Both backend and frontend deployed on Railway
+
+```mermaid
+graph TD
+  "Discord"-->|"Bot"|"Backend"-->|"WebSocket"|"Frontend"
+```
 
 ---
 
@@ -39,11 +55,14 @@ A modern web client for interacting with your Discord bot, built with Next.js, R
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/your-username/discord-bot-client.git
    cd discord-bot-client/client
    ```
+
 2. **Install dependencies:**
+
    ```bash
    pnpm install
    # or
@@ -74,6 +93,7 @@ Adjust these as needed for your deployment.
 ## Usage
 
 - **Start the development server:**
+
   ```bash
   pnpm dev
   # or
@@ -81,6 +101,7 @@ Adjust these as needed for your deployment.
   # or
   yarn dev
   ```
+
 - Open [http://localhost:3000](http://localhost:3000) in your browser.
 - Log in with your Discord account and interact with your bot.
 
@@ -88,7 +109,7 @@ Adjust these as needed for your deployment.
 
 ## Project Structure
 
-```
+```sh
 client/
   api/            # API service and constants
   app/            # Next.js app directory (pages, layouts)
@@ -104,13 +125,23 @@ client/
 
 ## Deployment
 
-This project is ready to deploy on [Vercel](https://vercel.com/) or any platform supporting Next.js.
+This project is ready to deploy on [Railway](https://railway.app/).
 
-- **Deploy on Vercel:**
-  [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/goal651s-projects/v0-discord-bot-project)
-
+- **Deploy on Railway:**
+  1. Connect your repository to Railway.
+  2. Set the required environment variables in the Railway dashboard.
+  3. Deploy both backend and frontend services.
 - **Live Project:**
-  [https://vercel.com/goal651s-projects/v0-discord-bot-project](https://vercel.com/goal651s-projects/v0-discord-bot-project)
+  - [Your Railway Deployment URL Here]
+
+---
+
+## Design Decisions & Improvements
+
+- Used socket.io for real-time updates for simplicity and reliability.
+- Grouped messages from the same user for better readability.
+- Support-oriented: clear error states, connection feedback, and user guidance.
+- (Optional) If you want to scale, consider message pagination, advanced error handling, or a richer support dashboard.
 
 ---
 

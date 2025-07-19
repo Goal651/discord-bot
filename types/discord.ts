@@ -63,3 +63,18 @@ export interface DiscordChannel {
     canManage: boolean
   }
 }
+
+export interface DiscordUser {
+  id: string;
+  username: string;
+  displayName?: string;
+  avatar?: string;
+  isBot?: boolean;
+  createdAt?: string;
+}
+
+export interface ChannelSelectorProps {
+  channels: DiscordChannel[]
+  activeChannel: string | null
+  onChannelChange: (channelId: string) => void
+}

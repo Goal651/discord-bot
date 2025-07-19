@@ -10,18 +10,18 @@ class WebSocketService {
     private errorCallback?: (error: Error) => void
     private channelsCallback?: (channels: DiscordChannel[]) => void
     private token: string | null = null
+    private userInfoCallback?: (user: any) => void;
 
+    //For connecting to server
     connect(): void {
-        // Use provided token or fallback to AuthService's token
         this.token = localStorage.getItem('auth_token')
         if (!this.token) return
-        if (this.socket && this.socket.connected) {
-            return
-        }
+        if (this.socket && this.socket.connected) return
+
         this.socket = io(this.url, {
             transports: ["websocket", "polling"],
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 5000,
             timeout: 20000,
             auth: {
                 token: this.token,
@@ -31,6 +31,7 @@ class WebSocketService {
         this.connectionStatusCallback?.("connecting")
     }
 
+    //Setter for auth token
     setToken(token: string) {
         this.token = token
         if (this.socket) {
@@ -39,6 +40,7 @@ class WebSocketService {
         }
     }
 
+    //Handle for socket events
     private setupEventListeners(): void {
         if (!this.socket) return
 
@@ -71,24 +73,37 @@ class WebSocketService {
             console.warn("Rate limited:", data.message, "Retry after:", data.retryAfter)
             this.errorCallback?.(new Error(`Rate limited: ${data.message}`))
         })
+        this.socket.on("user_info", (user: any) => {
+            this.userInfoCallback?.(user);
+        });
     }
 
+    //Handle for server connection changes
     onConnectionChange(callback: (status: ConnectionStatus) => void): void {
         this.connectionStatusCallback = callback
     }
 
+    //Handle for receiving new message
     onMessage(callback: (message: DiscordMessage) => void): void {
         this.messageCallback = callback
     }
 
+    //Handle errors
     onError(callback: (error: Error) => void): void {
         this.errorCallback = callback
     }
 
+    //Handle channels update
     onChannelsUpdate(callback: (channels: DiscordChannel[]) => void): void {
         this.channelsCallback = callback
     }
 
+    //Handle user info
+    onUserInfo(callback: (user: any) => void): void {
+        this.userInfoCallback = callback;
+    }
+
+    //Handle disconnecting
     disconnect(): void {
         if (this.socket) {
             this.socket.disconnect()
@@ -96,13 +111,11 @@ class WebSocketService {
         }
     }
 
+    //Helper for emitting events to server
     send(event: string, data?: any, callback?: (response: any) => void) {
         if (!this.socket) return
-        if (callback) {
-            this.socket.emit(event, data, callback)
-        } else {
-            this.socket.emit(event, data)
-        }
+        if (callback) this.socket.emit(event, data, callback)
+        else this.socket.emit(event, data)
     }
 }
 

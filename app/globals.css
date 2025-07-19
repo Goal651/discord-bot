@@ -136,3 +136,23 @@
 .theme-fire-orange {
   --shadow-color: rgba(249, 115, 22, 0.3);
 }
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bg-chat-card-gradient {
+  background: radial-gradient(ellipse at 60% 40%, rgba(114,137,218,0.08) 0%, rgba(44,47,51,0.95) 80%),
+    linear-gradient(135deg, rgba(32,34,37,0.98) 0%, rgba(54,57,63,0.98) 100%);
+}

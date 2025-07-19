@@ -8,9 +8,11 @@ export default function UseDiscordAuthToken() {
   const { toast } = useToast()
 
   useEffect(() => {
+    //Getting all params in url (?test='')
     const params = new URLSearchParams(window.location.search)
     const token = params.get("token")
     const error = params.get("error")
+    
     if (token) {
       localStorage.setItem("auth_token", token)
       router.replace('/')

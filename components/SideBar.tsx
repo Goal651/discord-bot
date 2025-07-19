@@ -3,13 +3,8 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import type { DiscordChannel } from "@/types/discord"
+import type { ChannelSelectorProps } from "@/types/discord"
 
-interface ChannelSelectorProps {
-  channels: DiscordChannel[]
-  activeChannel: string | null
-  onChannelChange: (channelId: string) => void
-}
 
 export function ChannelSelector({ channels, activeChannel, onChannelChange }: ChannelSelectorProps) {
   return (
