@@ -7,14 +7,12 @@ import type { DiscordChannel } from "@/types/discord"
 import { Volume2 } from "lucide-react"
 
 interface MessageStreamProps {
-  isConnected: boolean
-  activeChannel?: DiscordChannel | null
-  messages?: DiscordMessage[]
+  activeChannel: DiscordChannel | null
+  messages: DiscordMessage[]
   connectionStatus: string
 }
 
-export function MessageStream({ isConnected, activeChannel, messages: propMessages, connectionStatus }: MessageStreamProps) {
-  const messages = propMessages ?? []
+export function MessageList({  activeChannel, messages, connectionStatus }: MessageStreamProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [showScrollToLatest, setShowScrollToLatest] = useState(false)
@@ -61,15 +59,11 @@ export function MessageStream({ isConnected, activeChannel, messages: propMessag
     )
   }
 
-  if (!isConnected && messages.length === 0) {
+  if (messages.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-[#23272a]/90 rounded-xl shadow-lg">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-[#23272a] bg-[#2f3136] w-full shadow-sm">
         <div className="text-gray-300">
-          <div className="animate-pulse mb-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full mx-auto mb-4 animate-spin"></div>
-          </div>
-          <p className="text-lg text-white">Connecting to Discord stream...</p>
-          <p className="text-sm mt-2 text-gray-400">Initializing gaming console...</p>
+          There is no incoming messages
         </div>
       </div>
     )

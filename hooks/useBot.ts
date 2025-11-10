@@ -7,7 +7,7 @@ import { useEffect, useState } from "react"
 export function useBot() {
     const socket = useSocket()
     const [channelSearch, setChannelSearch] = useState('');
-    const [activeChannel, setActiveChannel] = useState('')
+    const [activeChannel, setActiveChannel] = useState<DiscordChannel|null>(null)
     const [channels, setChannels] = useState<DiscordChannel[]>([])
     const [messages, setMessages] = useState<DiscordMessage[]>([])
     const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting")

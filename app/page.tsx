@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MessageStream } from "@/components/messageList"
+import { MessageList} from "@/components/messageList"
 import { ConnectionStatus } from "@/components/connectionStatus"
 import { useBot } from "@/hooks/useBot"
 import { FaDiscord } from "react-icons/fa"
@@ -9,6 +9,7 @@ import Image from "next/image"
 import { FiSettings } from "react-icons/fi"
 import { FiMenu, FiX } from "react-icons/fi"
 import LoadingScreen from "@/components/LoadingScreen"
+import ChannelsList from "@/components/channelsList"
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -85,37 +86,11 @@ export default function Home() {
           />
         </div>
         <nav className="flex-1 overflow-y-auto bg-gradient-to-b from-[#23272a]/80 to-[#2c2f33]/90">
-          {filteredChannels.length > 0 ? (
-            <ul>
-              {filteredChannels.map((channel) => (
-                <li key={channel.id}>
-                  <button
-                    className={`w-full flex items-center gap-3 text-left px-6 py-3 transition rounded-none border-l-4 ${activeChannel === channel.id ? "bg-[#2c2f33] border-[#7289da] font-semibold" : "hover:bg-[#36393f]/80 hover:border-[#7289da]/60 hover:font-semibold border-transparent"}`}
-                    onClick={() => setActiveChannel(channel.id)}
-                  >
-                    {/* Avatar */}
-                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#23272a] border border-[#36393f] mr-1">
-                      <FaDiscord />
-                    </span>
-                    {/* Hashtag icon as inline SVG */}
-                    <span className="flex items-center">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
-                        <line x1="4" y1="9" x2="20" y2="9" />
-                        <line x1="4" y1="15" x2="20" y2="15" />
-                        <line x1="10" y1="3" x2="8" y2="21" />
-                        <line x1="16" y1="3" x2="14" y2="21" />
-                      </svg>
-                    </span>
-                    <span className="truncate">{channel.name}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : channelSearch ? (
-            <div className="p-6 text-[#b9bbbe]">No channels found</div>
-          ) : (
-            <div className="p-6 text-[#b9bbbe]">No channels</div>
-          )}
+          <ChannelsList
+            channels={filteredChannels}
+            setActiveChannel={setActiveChannel}
+            channelSearch={channelSearch}
+            activeChannel={activeChannel} />
         </nav>
       </aside>
 
@@ -141,9 +116,8 @@ export default function Home() {
         </header>
         <section className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-[#23272a]/80 via-[#2c2f33]/90 to-[#23272a] p-6">
           <div className="flex-1 w-full max-w-4xl mx-auto rounded-2xl shadow-2xl border border-[#36393f] bg-chat-card-gradient overflow-hidden flex flex-col">
-            <MessageStream
-              isConnected={connectionStatus === "connected"}
-              activeChannel={channels.find(c => c.id === activeChannel)}
+            <MessageList
+              activeChannel={activeChannel}
               messages={messages}
               connectionStatus={connectionStatus}
             />
